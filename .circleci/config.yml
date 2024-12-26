@@ -1,0 +1,47 @@
+version: 2.1
+commands:
+  setup:
+    steps:
+      - checkout
+      - run:
+          name: Setup QEMU
+          command: |
+            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - run:
+          name: Create Buildx Builder
+          command: |
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            docker context create multi-arch-build
+            docker buildx create --use multi-arch-build
+
+jobs:
+  build:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: medium
+    steps:
+      - setup
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+      - run:
+          name: Build and Push Multi-Arch Docker Image
+          command: |
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            docker buildx build \
+              --push \
+              --platform linux/arm64,linux/amd64 \
+              -t $DOCKERHUB_USERNAME/$DOCKER_IMAGE:$CIRCLE_TAG \
+              -t $DOCKERHUB_USERNAME/$DOCKER_IMAGE:latest .
+
+workflows:
+  version: 2.1
+  build-and-push-multi-arch-image:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
+            branches:
+              ignore: /.*/

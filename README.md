@@ -41,5 +41,5 @@ This will sync `/path/to/host` to `/path/in/mega`.
 
 ## Reporting Issues
 
-For bugs and issues, please create a GitHub issue [here](https://github.com/j3ko/megasync/issues).
+For bugs and issues, please create a GitHub issue [here](https://github.com/j3ko/mega-sync/issues).
 

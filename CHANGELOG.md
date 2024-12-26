@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/j3ko/mega-sync/compare/v0.1.0...v0.1.1) (2024-12-26)
+
+
+### Miscellaneous Chores
+
+* **ci:** use large instance ([37ad35a](https://github.com/j3ko/mega-sync/commit/37ad35ab5b81d4af32c9b17ccd4c13d2a3840bc5))
+
 ## 0.1.0 (2024-12-26)
 
 

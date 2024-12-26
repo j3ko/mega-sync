@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/j3ko/mega-sync/compare/v0.1.1...v0.1.2) (2024-12-26)
+
+
+### Miscellaneous Chores
+
+* **ci:** rework build steps ([0d7a899](https://github.com/j3ko/mega-sync/commit/0d7a89985eb7451313eba1c8d34a6c76349428fb))
+
 ## [0.1.1](https://github.com/j3ko/mega-sync/compare/v0.1.0...v0.1.1) (2024-12-26)
 
 

@@ -18,7 +18,6 @@ jobs:
   build:
     machine:
       image: ubuntu-2204:current
-    resource_class: medium
     steps:
       - setup
       - run:

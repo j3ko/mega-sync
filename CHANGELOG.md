@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0 (2024-12-26)
+
+
+### Miscellaneous Chores
+
+* initial commit ([5a6bb4c](https://github.com/j3ko/mega-sync/commit/5a6bb4c2499ee91ab4d9c0cb54102cfe4eaf5820))
+
 ## [0.1.4](https://github.com/j3ko/mega-sync/compare/v0.1.3...v0.1.4) (2024-12-26)
 
 

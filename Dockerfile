@@ -1,10 +1,7 @@
-# Start from a Debian-based image
 FROM debian:bookworm-slim
 
-# Set non-interactive frontend to avoid prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install required build dependencies
 RUN apt-get update && apt-get install -y \
     gosu \
     autoconf \
@@ -32,32 +29,29 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Clone MEGAcmd source code with submodules
 RUN git clone --recursive https://github.com/meganz/MEGAcmd.git /tmp/MEGAcmd
 
-# Set the working directory
 WORKDIR /tmp/MEGAcmd
 
-# Run Autotools and configure with --without-ffmpeg and --disable-dependency-tracking
 RUN sh autogen.sh && \
     ./configure --without-ffmpeg --disable-dependency-tracking && \
     make && \
     make install && \
     ldconfig
 
-# Clean up unnecessary files to reduce image size
 RUN rm -rf /tmp/*
 
-# Copy a startup script
+HEALTHCHECK --interval=60s --timeout=10s --start-period=10s --retries=3 CMD /usr/local/bin/healthcheck.sh || exit 1
+
+COPY healthcheck.sh /usr/local/bin/healthcheck.sh
+RUN chmod +x /usr/local/bin/healthcheck.sh
+
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Set the working directory for MEGAcmd
 WORKDIR /data
 
-# Expose a volume to allow syncing with MEGA
 VOLUME ["/data"]
 
-# Run the entrypoint script that logs in and sets up the sync
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 

@@ -92,10 +92,18 @@ workflows:
   version: 2
   deploy:
     jobs:
-      - build-arm64
-      - build-amd64
+      - build-arm64:
+          filters:
+            branches:
+              only: main
+      - build-amd64:
+          filters:
+            branches:
+              only: main
       - create-manifest:
           requires:
             - build-arm64
             - build-amd64
-
+          filters:
+            branches:
+              only: main

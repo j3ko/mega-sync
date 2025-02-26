@@ -2,53 +2,25 @@ FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install necessary runtime dependencies
 RUN apt-get update && apt-get install -y \
     gosu \
-    autoconf \
-    libtool \
-    make \
-    g++ \
-    libcrypto++-dev \
-    zlib1g-dev \
-    libsqlite3-dev \
-    libssl-dev \
-    libcurl4-gnutls-dev \
-    libreadline-dev \
-    libsodium-dev \
-    libc-ares-dev \
-    libfreeimage-dev \
-    libavcodec-dev \
-    libavutil-dev \
-    libavformat-dev \
-    libswscale-dev \
-    libmediainfo-dev \
-    libzen-dev \
-    libuv1-dev \
-    libicu-dev \
-    git \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --recursive https://github.com/meganz/MEGAcmd.git /tmp/MEGAcmd
+# Copy the prebuilt MEGAcmd binaries
+COPY dist/mega* /usr/bin/
+COPY dist/megacmd /opt/megacmd/
 
-WORKDIR /tmp/MEGAcmd
+# Ensure binaries are executable
+RUN chmod +x /usr/bin/mega* && chmod +x /opt/megacmd/*
 
-RUN sh autogen.sh && \
-    ./configure --without-ffmpeg --disable-dependency-tracking && \
-    make && \
-    make install && \
-    ldconfig
-
-RUN rm -rf /tmp/*
-
+# Copy and set permissions for scripts
 COPY healthcheck.sh /usr/local/bin/healthcheck.sh
-RUN chmod +x /usr/local/bin/healthcheck.sh
-
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/healthcheck.sh /usr/local/bin/entrypoint.sh
 
-WORKDIR /data
-
+# Set working directory
+WORKDIR /usr/bin
 VOLUME ["/data"]
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

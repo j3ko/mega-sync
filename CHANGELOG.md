@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/j3ko/mega-sync/compare/v0.1.2...v0.2.0) (2025-02-27)
+
+
+### Features
+
+* add healthcheck ([#4](https://github.com/j3ko/mega-sync/issues/4)) ([1b581a5](https://github.com/j3ko/mega-sync/commit/1b581a5f9b474251a2ce404ba66fa3270f574217))
+* upgrade MEGAcmd binaries ([#7](https://github.com/j3ko/mega-sync/issues/7)) ([b154474](https://github.com/j3ko/mega-sync/commit/b1544748a9b8cb7e772f05112746932ca85b27c8)), closes [#6](https://github.com/j3ko/mega-sync/issues/6)
+
 ## [0.1.2](https://github.com/j3ko/mega-sync/compare/v0.1.1...v0.1.2) (2024-12-26)
 
 

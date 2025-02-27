@@ -1,0 +1,45 @@
+From 9b47bd6e1ad8112040df88bff842f464fd1a9472 Mon Sep 17 00:00:00 2001
+From: j3ko <j3ko@users.noreply.github.com>
+Date: Wed, 26 Feb 2025 13:10:48 +0800
+Subject: [PATCH] build: add arm64-linux triplet
+
+---
+ cmake/modules/vcpkg_management.cmake           |  2 ++
+ cmake/vcpkg_overlay_triplets/arm64-linux.cmake | 11 +++++++++++
+ 2 files changed, 13 insertions(+)
+ create mode 100644 cmake/vcpkg_overlay_triplets/arm64-linux.cmake
+
+diff --git a/cmake/modules/vcpkg_management.cmake b/cmake/modules/vcpkg_management.cmake
+index f0c76898e..abfdf6606 100644
+--- a/cmake/modules/vcpkg_management.cmake
++++ b/cmake/modules/vcpkg_management.cmake
+@@ -28,6 +28,8 @@ macro(process_vcpkg_libraries overlays_path)
+         else()
+             if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv7l" OR (NOT CMAKE_SYSTEM_PROCESSOR AND HOST_ARCH MATCHES "armv7l"))
+                 set(VCPKG_TARGET_TRIPLET "arm-linux")
++            elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64" OR (NOT CMAKE_SYSTEM_PROCESSOR AND HOST_ARCH MATCHES "aarch64"))
++                set(VCPKG_TARGET_TRIPLET "arm64-linux")
+             else()
+                 set(VCPKG_TARGET_TRIPLET "x64-linux-mega")
+             endif()
+diff --git a/cmake/vcpkg_overlay_triplets/arm64-linux.cmake b/cmake/vcpkg_overlay_triplets/arm64-linux.cmake
+new file mode 100644
+index 000000000..65e3c565e
+--- /dev/null
++++ b/cmake/vcpkg_overlay_triplets/arm64-linux.cmake
+@@ -0,0 +1,11 @@
++set(VCPKG_TARGET_ARCHITECTURE arm64)
++set(VCPKG_CRT_LINKAGE dynamic)
++set(VCPKG_CMAKE_SYSTEM_NAME Linux)
++
++if(PORT MATCHES "ffmpeg")
++    # build this library as dynamic (usually because it is LGPL licensed)
++    set(VCPKG_LIBRARY_LINKAGE dynamic)
++else()
++    # build this library statically (much simpler installation, debugging, etc)
++        set(VCPKG_LIBRARY_LINKAGE static)
++endif()
+\ No newline at end of file
+-- 
+2.43.0
+

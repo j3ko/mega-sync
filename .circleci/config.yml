@@ -1,4 +1,5 @@
 version: 2.1
+
 jobs:
   build-arm64:
     working_directory: ~/app
@@ -18,11 +19,19 @@ jobs:
             chmod +x build.sh
             ./build.sh "$DOCKERHUB_USERNAME/$DOCKER_IMAGE:arm64-edge"
       - run:
-          name: Push ARM64 Docker image
+          name: Push ARM64 Docker Image
           command: |
             echo "Logging into Docker Hub..."
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push $DOCKERHUB_USERNAME/$DOCKER_IMAGE:arm64-edge
+      - run:
+          name: Save ARM64 Docker Image
+          command: |
+            docker save -o arm64.tar $DOCKERHUB_USERNAME/$DOCKER_IMAGE:arm64-edge
+      - persist_to_workspace:
+          root: .
+          paths:
+            - arm64.tar
 
   build-amd64:
     working_directory: ~/app
@@ -42,11 +51,19 @@ jobs:
             chmod +x build.sh
             ./build.sh "$DOCKERHUB_USERNAME/$DOCKER_IMAGE:amd64-edge"
       - run:
-          name: Push AMD64 Docker image
+          name: Push AMD64 Docker Image
           command: |
             echo "Logging into Docker Hub..."
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push $DOCKERHUB_USERNAME/$DOCKER_IMAGE:amd64-edge
+      - run:
+          name: Save AMD64 Docker Image
+          command: |
+            docker save -o amd64.tar $DOCKERHUB_USERNAME/$DOCKER_IMAGE:amd64-edge
+      - persist_to_workspace:
+          root: .
+          paths:
+            - amd64.tar
 
   create-manifest-edge:
     docker:
@@ -55,8 +72,15 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
     steps:
+      - attach_workspace:
+          at: .
       - setup_remote_docker:
           docker_layer_caching: true
+      - run:
+          name: Load Docker Images
+          command: |
+            docker load -i arm64.tar
+            docker load -i amd64.tar
       - run:
           name: Create and Push Edge Multi-Arch Manifest
           command: |
@@ -78,8 +102,15 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
     steps:
+      - attach_workspace:
+          at: .
       - setup_remote_docker:
           docker_layer_caching: true
+      - run:
+          name: Load Docker Images
+          command: |
+            docker load -i arm64.tar
+            docker load -i amd64.tar
       - run:
           name: Create and Push Versioned Multi-Arch Manifest
           command: |

@@ -105,10 +105,14 @@ workflows:
     jobs:
       - build-arm64:
           filters:
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
             branches:
               only: main
       - build-amd64:
           filters:
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
             branches:
               only: main
       - create-manifest-edge:
@@ -116,6 +120,8 @@ workflows:
             - build-arm64
             - build-amd64
           filters:
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
             branches:
               only: main
       - create-manifest-versioned:

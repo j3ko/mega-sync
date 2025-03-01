@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/j3ko/mega-sync/compare/v0.2.0...v0.2.1) (2025-03-01)
+
+
+### Bug Fixes
+
+* ci build ([9eacd58](https://github.com/j3ko/mega-sync/commit/9eacd588a75346d9fabeb71d3e32b86b21bc9df6))
+
 ## [0.2.0](https://github.com/j3ko/mega-sync/compare/v0.1.2...v0.2.0) (2025-02-27)
 
 

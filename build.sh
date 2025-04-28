@@ -19,6 +19,7 @@ mkdir -p "$DIST_DIR"
 git clone --recurse-submodules https://github.com/meganz/MEGAcmd.git "$BUILD_DIR"
 cd "$BUILD_DIR"
 git checkout "$MEGACMD_VERSION"
+git submodule update --init --recursive
 
 # Apply MEGAcmd patch if it exists
 if [ -f "../../megacmd.patch" ]; then

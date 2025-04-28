@@ -10,6 +10,12 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
     steps:
+      - run:
+          name: Configure Git Identity
+          command: |
+            git config --global user.email "circleci@example.com"
+            git config --global user.name "CircleCI"
+            git config --global advice.detachedHead false
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
@@ -42,6 +48,12 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
     steps:
+      - run:
+          name: Configure Git Identity
+          command: |
+            git config --global user.email "circleci@example.com"
+            git config --global user.name "CircleCI"
+            git config --global advice.detachedHead false
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true

@@ -5,7 +5,7 @@ export MEGA_PATH="${MEGA_PATH:-/}"
 
 # Function to handle termination signals
 cleanup() {
-  echo "Stopping container..."
+  echo "DEBUG: Stopping container..." >&2
   mega-logout
   exit 0
 }
@@ -13,7 +13,7 @@ cleanup() {
 # Function to generate a machine ID
 generate_machine_id() {
   if [ ! -f /etc/machine-id ]; then
-    echo "Generating new machine ID..."
+    echo "DEBUG: Generating new machine ID..." >&2
     uuid=$(dd if=/dev/urandom bs=1 count=16 2>/dev/null | sha256sum | head -c 32)
     echo "$uuid" > /etc/machine-id
   fi
@@ -25,12 +25,12 @@ trap cleanup SIGTERM SIGINT
 # Function to create or update the user and group
 setup_user() {
   if [ "$PUID" -eq 0 ] && [ "$PGID" -eq 0 ]; then
-    echo "Running as root..."
+    echo "DEBUG: Running as root..." >&2
     HOME_DIR="/root"
     return
   fi
 
-  echo "Setting up user with UID: $PUID and GID: $PGID..."
+  echo "DEBUG: Setting up user with UID: $PUID and GID: $PGID..." >&2
 
   # Create the group if it doesn't exist
   if ! getent group "$PGID" >/dev/null; then
@@ -43,8 +43,29 @@ setup_user() {
   fi
 
   # Set permissions for critical directories
-  mkdir -p /home/megasync/.megaCmd /data
-  chown -R "$PUID:$PGID" /home/megasync/.megaCmd /data
+  mkdir -p /home/megasync/.megaCmd
+  chown -R "$PUID:$PGID" /home/megasync/.megaCmd
+
+  # Set permissions for local paths in MEGA_CMD (for mega-sync commands)
+  if [ -n "$MEGA_CMD" ]; then
+    echo "DEBUG: Parsing MEGA_CMD for sync paths: $MEGA_CMD" >&2
+    IFS=',' read -ra COMMANDS <<< "$MEGA_CMD"
+    for cmd in "${COMMANDS[@]}"; do
+      # Extract the local path (second argument) if the command is mega-sync
+      if [[ "$cmd" =~ ^[[:space:]]*(mega-)?sync[[:space:]]+([^[:space:]]+).* ]]; then
+        local_path="${BASH_REMATCH[2]}"
+        if [ -n "$local_path" ]; then
+          echo "DEBUG: Setting permissions for sync path: $local_path" >&2
+          mkdir -p "$local_path"
+          chown -R "$PUID:$PGID" "$local_path"
+        fi
+      fi
+    done
+  else
+    echo "DEBUG: Setting permissions for default sync path: /data" >&2
+    mkdir -p /data
+    chown -R "$PUID:$PGID" /data
+  fi
   HOME_DIR="/home/megasync"
 }
 
@@ -60,13 +81,13 @@ generate_machine_id
 
 # Login function
 mega_login() {
-  echo "Logging in to MEGA..."
+  echo "DEBUG: Logging in to MEGA..." >&2
   if [ -n "$SESSION" ]; then
     gosu "$PUID:$PGID" mega-login "$SESSION"
   elif [ -n "$USERNAME" ] && [ -n "$PASSWORD" ]; then
     gosu "$PUID:$PGID" mega-login "$USERNAME" "$PASSWORD"
   else
-    echo "Error: Either SESSION or both USERNAME and PASSWORD must be set."
+    echo "ERROR: Either SESSION or both USERNAME and PASSWORD must be set." >&2
     exit 1
   fi
 }
@@ -74,24 +95,54 @@ mega_login() {
 # Log in to MEGA
 mega_login
 
-# Default behavior: sync /data with the specified MEGA_PATH if no command is provided
-if [ -z "$MEGA_CMD" ]; then
-  MEGA_CMD="mega-sync /data $MEGA_PATH"
-fi
+# Function to execute multiple MEGA commands
+execute_commands() {
+  local pids=()
+  if [ -n "$MEGA_CMD" ]; then
+    echo "DEBUG: Processing MEGA_CMD: $MEGA_CMD" >&2
+    IFS=',' read -ra COMMANDS <<< "$MEGA_CMD"
+    echo "DEBUG: Split into ${#COMMANDS[@]} commands" >&2
+    for cmd in "${COMMANDS[@]}"; do
+      # Trim leading/trailing whitespace
+      cmd=$(echo "$cmd" | xargs)
+      if [ -n "$cmd" ]; then
+        # Add mega- prefix if not already provided
+        if [[ "$cmd" != mega-* ]]; then
+          cmd="mega-$cmd"
+        fi
+        echo "DEBUG: Executing command: $cmd" >&2
+        # Run the command in the background, redirecting stdout to stderr to capture sync messages
+        gosu "$PUID:$PGID" env HOME="$HOME_DIR" MEGACMD_CONFIG_DIR="$MEGACMD_CONFIG_DIR" bash -c "$cmd >&2" &
+        local pid=$!
+        pids+=($pid)
+        echo "DEBUG: Command '$cmd' started with PID: $pid" >&2
+      else
+        echo "DEBUG: Skipping empty command" >&2
+      fi
+    done
+  else
+    # Default behavior: sync /data with the specified MEGA_PATH
+    echo "DEBUG: No MEGA_CMD provided. Starting default sync for /data -> $MEGA_PATH" >&2
+    gosu "$PUID:$PGID" mega-sync /data "$MEGA_PATH" >&2 &
+    local pid=$!
+    pids+=($pid)
+    echo "DEBUG: Default sync started with PID: $pid" >&2
+  fi
+  # Output only the PIDs, one per line, to stdout
+  printf '%s\n' "${pids[@]}"
+}
 
-# Add mega- prefix if not already provided and execute the command
-if [[ "$MEGA_CMD" != mega-* ]]; then
-  MEGA_CMD="mega-$MEGA_CMD"
-fi
-
-# Execute the MEGA_CMD
-echo "Executing command: $MEGA_CMD"
-gosu "$PUID:$PGID" env HOME="$HOME_DIR" MEGACMD_CONFIG_DIR="$MEGACMD_CONFIG_DIR" bash -c "$MEGA_CMD" &
+# Execute the commands and capture PIDs
+echo "DEBUG: Starting command execution" >&2
+pids=($(execute_commands))
+echo "DEBUG: Command PIDs: ${pids[*]}" >&2
 
 # Monitor the log file
-TAIL_PID=$!
+echo "DEBUG: Monitoring log file: $MEGACMD_CONFIG_DIR/megacmdserver.log" >&2
 tail -f "$MEGACMD_CONFIG_DIR/megacmdserver.log" &
 TAIL_PID_LOG=$!
+echo "DEBUG: Log tail started with PID: $TAIL_PID_LOG" >&2
 
-# Wait for termination signal and cleanup
-wait $TAIL_PID $TAIL_PID_LOG
+# Wait for all command PIDs and the log tail process
+echo "DEBUG: Waiting for PIDs: ${pids[*]} $TAIL_PID_LOG" >&2
+wait "${pids[@]}" "$TAIL_PID_LOG"

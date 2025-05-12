@@ -30,7 +30,7 @@ docker run --name=mega-sync \
   j3ko/mega-sync:latest
 ```
 
-This will sync `/path/to/host` to `/path/in/mega` in your MEGA account.
+This will sync `/path/to/host` to `/path/in/mega` in your MEGA account. Ensure remote MEGA path `/path/in/mega` exists before starting the sync.
 
 ## Multiple Sync Commands
 To sync multiple local directories to different MEGA paths, use the `MEGA_CMD` environment variable with comma-separated `sync` commands:
@@ -71,7 +71,7 @@ services:
     restart: unless-stopped
 ```
 
-This mounts `/path/to/host1` and `/path/to/host2` for syncing and stores MEGAcmd logs in `/path/to/logs`.
+This mounts `/path/to/host1` and `/path/to/host2` for syncing. Ensure remote MEGA paths `/path/to/host1` and `/path/to/host2` exist before starting the sync.
 
 ## Parameters
 
@@ -89,6 +89,7 @@ This mounts `/path/to/host1` and `/path/to/host2` for syncing and stores MEGAcmd
 
 ## Notes
 - **Permissions**: Set `PUID` and `PGID` to match the user/group IDs of your host directories to avoid permission issues. The container adjusts ownership of sync paths based on these IDs.
+- **Remote Paths**: Ensure remote MEGA paths exist before attempting to sync or you will encounter an error.
 - **Filesystem Warnings**: You may see warnings in about unresolved device symlinks (e.g., `Couldn't resolve device symlink`). These are benign and do not affect sync functionality in Docker environments.
 
 ## Reporting Issues

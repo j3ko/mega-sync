@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/j3ko/mega-sync/compare/v0.2.3...v0.3.0) (2025-05-12)
+
+
+### Features
+
+* multiple command execution ([1ce0f45](https://github.com/j3ko/mega-sync/commit/1ce0f4582831ca1af844fa4750a44372a66b4368)), closes [#11](https://github.com/j3ko/mega-sync/issues/11)
+
 ## [0.2.3](https://github.com/j3ko/mega-sync/compare/v0.2.2...v0.2.3) (2025-03-01)
 
 

@@ -71,7 +71,7 @@ services:
     restart: unless-stopped
 ```
 
-This mounts `/path/to/host1` and `/path/to/host2` for syncing. Ensure remote MEGA paths `/path/to/host1` and `/path/to/host2` exist before starting the sync.
+This mounts `/path/to/host1` and `/path/to/host2` for syncing. Ensure remote MEGA paths `/remote1` and `/remote2` exist before starting the sync.
 
 ## Parameters
 

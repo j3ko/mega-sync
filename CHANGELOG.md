@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/j3ko/mega-sync/compare/v0.3.0...v0.4.0) (2025-11-08)
+
+
+### Features
+
+* update megacmd to 2.2.0.1 ([#13](https://github.com/j3ko/mega-sync/issues/13)) ([490e786](https://github.com/j3ko/mega-sync/commit/490e786700359f8862a76a73a1375580a7ddeac6))
+
 ## [0.3.0](https://github.com/j3ko/mega-sync/compare/v0.2.3...v0.3.0) (2025-05-12)
 
 

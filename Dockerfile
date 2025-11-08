@@ -1,26 +1,45 @@
 FROM debian:bookworm-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
+ARG ARCH
+ARG DEB_DISTRO=Debian_12
 
-# Install necessary runtime dependencies
+# Detect architecture automatically when not provided
+#   amd64  → amd64
+#   arm64  → arm64
+RUN if [ -z "$ARCH" ]; then \
+      case "$(dpkg --print-architecture)" in \
+        amd64) ARCH="amd64" ;; \
+        arm64) ARCH="arm64" ;; \
+        *) echo "Unsupported arch"; exit 1 ;; \
+      esac; \
+      echo "ARCH=$ARCH" > /arch.env; \
+    else \
+      echo "ARCH=$ARCH" > /arch.env; \
+    fi
+
+# Install dependencies
 RUN apt-get update && apt-get install -y \
-    gosu \
-    && rm -rf /var/lib/apt/lists/*
+      wget \
+      ca-certificates \
+      gosu \
+      && rm -rf /var/lib/apt/lists/*
 
-# Copy the prebuilt MEGAcmd binaries
-COPY dist/mega* /usr/bin/
-COPY dist/megacmd /opt/megacmd/
+# Load detected ARCH
+RUN . /arch.env && \
+    echo "Using architecture: $ARCH" && \
+    wget -qO megacmd.deb \
+      "https://mega.nz/linux/repo/${DEB_DISTRO}/${ARCH}/megacmd-${DEB_DISTRO}_${ARCH}.deb" && \
+    apt-get update && \
+    apt-get install -y ./megacmd.deb && \
+    rm megacmd.deb
 
-# Ensure binaries are executable
-RUN chmod +x /usr/bin/mega* && chmod +x /opt/megacmd/*
+# Copy scripts
+COPY entrypoint.sh /usr/local/bin/
+COPY healthcheck.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/*.sh
 
-# Copy and set permissions for scripts
-COPY healthcheck.sh /usr/local/bin/healthcheck.sh
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/healthcheck.sh /usr/local/bin/entrypoint.sh
-
-# Set working directory
-WORKDIR /usr/bin
+WORKDIR /data
 VOLUME ["/data"]
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

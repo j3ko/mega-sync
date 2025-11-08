@@ -22,8 +22,7 @@ jobs:
       - run:
           name: Build ARM64 Docker image
           command: |
-            chmod +x build.sh
-            ./build.sh "$DOCKERHUB_USERNAME/$DOCKER_IMAGE:arm64-edge"
+            docker build -t "$DOCKERHUB_USERNAME/$DOCKER_IMAGE:arm64-edge" .
       - run:
           name: Push ARM64 Docker Image
           command: |
@@ -60,8 +59,7 @@ jobs:
       - run:
           name: Build AMD64 Docker image
           command: |
-            chmod +x build.sh
-            ./build.sh "$DOCKERHUB_USERNAME/$DOCKER_IMAGE:amd64-edge"
+            docker build -t "$DOCKERHUB_USERNAME/$DOCKER_IMAGE:amd64-edge" .
       - run:
           name: Push AMD64 Docker Image
           command: |
